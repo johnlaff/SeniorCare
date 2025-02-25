@@ -1,0 +1,9 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none  # Flyway cuida do schema, então desative o Hibernate
+    show-sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true  # Se houver um banco já existente, cria um baseline
+    locations: classpath:db/migration  # Onde as migrações serão buscadas
