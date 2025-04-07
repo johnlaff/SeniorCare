@@ -1,45 +1,63 @@
 package br.com.uniube.seniorcare.service;
 
 import br.com.uniube.seniorcare.domain.entity.Organization;
-import br.com.uniube.seniorcare.domain.repository.OrganizationRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.UUID;
 
-@Service
-@Transactional
-public class OrganizationService {
+/**
+ * Serviço para gerenciamento de organizações.
+ *
+ * Regras de negócio:
+ * 1. Validação de unicidade do nome
+ * 2. Validação de formato de domínio
+ * 3. Registro de eventos de auditoria
+ * 4. Verificação de registros dependentes antes da exclusão
+ */
+public interface OrganizationService {
 
-    private final OrganizationRepository organizationRepository;
+    /**
+     * Retorna todas as organizações.
+     *
+     * @return lista de organizações.
+     */
+    List<Organization> findAll();
 
-    public OrganizationService(OrganizationRepository organizationRepository) {
-        this.organizationRepository = organizationRepository;
-    }
+    /**
+     * Busca uma organização pelo seu ID, lançando exceção se não encontrada.
+     *
+     * @param id identificador da organização.
+     * @return organização encontrada.
+     */
+    Organization findById(UUID id);
 
-    public List<Organization> findAll() {
-        return organizationRepository.findAll();
-    }
+    /**
+     * Cria uma nova organização, aplicando validações de negócio:
+     * - Verifica se já existe outra com o mesmo nome;
+     * - Valida o formato do domínio;
+     * - Registra criação na auditoria.
+     *
+     * @param organization entidade que representa a nova organização.
+     * @return organização criada.
+     */
+    Organization createOrganization(Organization organization);
 
-    public Organization findById(UUID id) {
-        return organizationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Organization not found with id: " + id));
-    }
+    /**
+     * Atualiza uma organização existente, aplicando regras de negócio:
+     * - Se o nome for alterado, verifica unicidade;
+     * - Se o domínio for alterado, valida formato;
+     * - Registra atualização na auditoria.
+     *
+     * @param id identificador da organização a ser atualizada.
+     * @param updatedOrganization entidade com os dados atualizados.
+     * @return organização atualizada.
+     */
+    Organization updateOrganization(UUID id, Organization updatedOrganization);
 
-    public Organization createOrganization(Organization organization) {
-        return organizationRepository.save(organization);
-    }
-
-    public Organization updateOrganization(UUID id, Organization updatedOrganization) {
-        Organization organization = findById(id);
-        organization.setName(updatedOrganization.getName());
-        organization.setDomain(updatedOrganization.getDomain());
-        return organizationRepository.save(organization);
-    }
-
-    public void deleteOrganization(UUID id) {
-        Organization organization = findById(id);
-        organizationRepository.delete(organization);
-    }
+    /**
+     * Exclui uma organização se não houver registros dependentes,
+     * registrando a ação na auditoria.
+     *
+     * @param id identificador da organização a ser excluída.
+     */
+    void deleteOrganization(UUID id);
 }

@@ -7,3 +7,6 @@ spring:
     enabled: true
     baseline-on-migrate: true  # Se houver um banco já existente, cria um baseline
     locations: classpath:db/migration  # Onde as migrações serão buscadas
+app:
+  document:
+    storage-path: ${STORAGE_PATH:./storage/documents}

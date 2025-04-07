@@ -1,46 +1,65 @@
 package br.com.uniube.seniorcare.service;
 
 import br.com.uniube.seniorcare.domain.entity.Medication;
-import br.com.uniube.seniorcare.domain.repository.MedicationRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
-@Transactional
-public class MedicationService {
+/**
+ * Serviço para gerenciamento de medicamentos dos idosos.
+ *
+ * Regras de negócio:
+ * 1. Cada medicamento deve estar vinculado a um idoso e uma organização
+ * 2. Validações de nome, dosagem e frequência
+ * 3. Medicamento deve pertencer à organização do usuário atual
+ * 4. Registro de eventos de auditoria para todas as operações
+ */
+public interface MedicationService {
 
-    private final MedicationRepository medicationRepository;
+    /**
+     * Retorna todos os medicamentos da organização do usuário atual.
+     *
+     * @return lista de medicamentos.
+     */
+    List<Medication> findAll();
 
-    public MedicationService(MedicationRepository medicationRepository) {
-        this.medicationRepository = medicationRepository;
-    }
+    /**
+     * Busca um medicamento pelo seu ID, lançando exceção se não encontrado.
+     *
+     * @param id identificador do medicamento.
+     * @return medicamento encontrado.
+     */
+    Medication findById(UUID id);
 
-    public List<Medication> findAll() {
-        return medicationRepository.findAll();
-    }
+    /**
+     * Lista medicamentos por idoso.
+     *
+     * @param elderlyId identificador do idoso.
+     * @return lista de medicamentos do idoso.
+     */
+    List<Medication> findByElderly(UUID elderlyId);
 
-    public Medication findById(UUID id) {
-        return medicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medication not found with id: " + id));
-    }
+    /**
+     * Cria um novo medicamento, aplicando validações de negócio.
+     *
+     * @param medication entidade que representa o novo medicamento.
+     * @return medicamento criado.
+     */
+    Medication createMedication(Medication medication);
 
-    public Medication createMedication(Medication medication) {
-        return medicationRepository.save(medication);
-    }
+    /**
+     * Atualiza um medicamento existente.
+     *
+     * @param id identificador do medicamento a ser atualizado.
+     * @param updatedMedication entidade com os dados atualizados.
+     * @return medicamento atualizado.
+     */
+    Medication updateMedication(UUID id, Medication updatedMedication);
 
-    public Medication updateMedication(UUID id, Medication updatedMedication) {
-        Medication medication = findById(id);
-        medication.setName(updatedMedication.getName());
-        medication.setDosage(updatedMedication.getDosage());
-        medication.setFrequency(updatedMedication.getFrequency());
-        return medicationRepository.save(medication);
-    }
-
-    public void deleteMedication(UUID id) {
-        Medication medication = findById(id);
-        medicationRepository.delete(medication);
-    }
+    /**
+     * Exclui um medicamento.
+     *
+     * @param id identificador do medicamento a ser excluído.
+     */
+    void deleteMedication(UUID id);
 }

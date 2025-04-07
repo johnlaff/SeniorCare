@@ -1,5 +1,6 @@
 package br.com.uniube.seniorcare.domain.entity;
 
+import br.com.uniube.seniorcare.domain.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,6 +38,10 @@ public class Appointment {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AppointmentStatus status = AppointmentStatus.AGENDADO;
 
     @Override
     public boolean equals(Object o) {

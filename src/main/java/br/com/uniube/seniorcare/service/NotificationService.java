@@ -1,45 +1,103 @@
 package br.com.uniube.seniorcare.service;
 
 import br.com.uniube.seniorcare.domain.entity.Notification;
-import br.com.uniube.seniorcare.domain.repository.NotificationRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import br.com.uniube.seniorcare.domain.enums.NotificationStatus;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
-@Transactional
-public class NotificationService {
+/**
+ * Serviço para gerenciamento de notificações.
+ *
+ * Regras de negócio:
+ * 1. Cada notificação tem um remetente, destinatário e uma mensagem
+ * 2. Notificações são criadas inicialmente com status PENDENTE
+ * 3. As notificações podem ser marcadas como LIDA pelo destinatário
+ * 4. Registro de eventos de auditoria para todas as operações
+ */
+public interface NotificationService {
 
-    private final NotificationRepository notificationRepository;
+    /**
+     * Retorna todas as notificações da organização do usuário atual.
+     *
+     * @return lista de notificações.
+     */
+    List<Notification> findAll();
 
-    public NotificationService(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
+    /**
+     * Busca uma notificação pelo seu ID, lançando exceção se não encontrada.
+     *
+     * @param id identificador da notificação.
+     * @return notificação encontrada.
+     */
+    Notification findById(UUID id);
 
-    public List<Notification> findAll() {
-        return notificationRepository.findAll();
-    }
+    /**
+     * Cria uma nova notificação.
+     *
+     * @param notification entidade que representa a nova notificação.
+     * @return notificação criada.
+     */
+    Notification createNotification(Notification notification);
 
-    public Notification findById(UUID id) {
-        return notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found with id: " + id));
-    }
+    /**
+     * Envia uma notificação para um usuário específico.
+     *
+     * @param senderId ID do remetente.
+     * @param receiverId ID do destinatário.
+     * @param message conteúdo da mensagem.
+     * @return notificação criada.
+     */
+    Notification sendNotification(UUID senderId, UUID receiverId, String message);
 
-    public Notification createNotification(Notification notification) {
-        return notificationRepository.save(notification);
-    }
+    /**
+     * Marca uma notificação como lida.
+     *
+     * @param id identificador da notificação.
+     * @return notificação atualizada.
+     */
+    Notification markAsRead(UUID id);
 
-    public Notification updateNotification(UUID id, Notification updatedNotification) {
-        Notification notification = findById(id);
-        notification.setMessage(updatedNotification.getMessage());
-        notification.setStatus(updatedNotification.getStatus());
-        return notificationRepository.save(notification);
-    }
+    /**
+     * Exclui uma notificação.
+     *
+     * @param id identificador da notificação a ser excluída.
+     */
+    void deleteNotification(UUID id);
 
-    public void deleteNotification(UUID id) {
-        Notification notification = findById(id);
-        notificationRepository.delete(notification);
-    }
+    /**
+     * Busca notificações por destinatário.
+     *
+     * @param receiverId ID do usuário destinatário.
+     * @return lista de notificações do destinatário.
+     */
+    List<Notification> findByReceiver(UUID receiverId);
+
+    /**
+     * Busca notificações não lidas por destinatário.
+     *
+     * @param receiverId ID do usuário destinatário.
+     * @return lista de notificações não lidas.
+     */
+    List<Notification> findUnreadByReceiver(UUID receiverId);
+
+    /**
+     * Envia notificação para todos os familiares de um idoso.
+     *
+     * @param senderId ID do remetente.
+     * @param elderlyId ID do idoso.
+     * @param message conteúdo da mensagem.
+     * @return lista de notificações criadas.
+     */
+    List<Notification> notifyFamilyMembers(UUID senderId, UUID elderlyId, String message);
+
+    /**
+     * Envia notificação para todos os cuidadores de um idoso.
+     *
+     * @param senderId ID do remetente.
+     * @param elderlyId ID do idoso.
+     * @param message conteúdo da mensagem.
+     * @return lista de notificações criadas.
+     */
+    List<Notification> notifyCaregivers(UUID senderId, UUID elderlyId, String message);
 }

@@ -1,47 +1,75 @@
 package br.com.uniube.seniorcare.service;
 
 import br.com.uniube.seniorcare.domain.entity.User;
-import br.com.uniube.seniorcare.domain.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-@Service
-@Transactional
-public class UserService {
+/**
+ * Serviço para gerenciamento de usuários.
+ *
+ * Regras de negócio:
+ * 1. Validação de unicidade do email
+ * 2. Validação de formato de email
+ * 3. Validação de requisitos de senha
+ * 4. Registro de eventos de auditoria
+ */
+public interface UserService {
 
-    private final UserRepository userRepository;
+    /**
+     * Retorna todos os usuários.
+     *
+     * @return lista de usuários.
+     */
+    List<User> findAll();
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    /**
+     * Busca um usuário pelo seu ID, lançando exceção se não encontrado.
+     *
+     * @param id identificador do usuário.
+     * @return usuário encontrado.
+     */
+    User findById(UUID id);
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
+    /**
+     * Busca um usuário pelo email.
+     *
+     * @param email email do usuário.
+     * @return Optional contendo o usuário, se encontrado.
+     */
+    Optional<User> findByEmail(String email);
 
-    public User findById(UUID id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-    }
+    /**
+     * Cria um novo usuário, aplicando validações de negócio.
+     *
+     * @param user entidade que representa o novo usuário.
+     * @return usuário criado.
+     */
+    User createUser(User user);
 
-    public User createUser(User user) {
-        return userRepository.save(user);
-    }
+    /**
+     * Atualiza um usuário existente.
+     *
+     * @param id identificador do usuário a ser atualizado.
+     * @param updatedUser entidade com os dados atualizados.
+     * @return usuário atualizado.
+     */
+    User updateUser(UUID id, User updatedUser);
 
-    public User updateUser(UUID id, User updatedUser) {
-        User user = findById(id);
-        user.setName(updatedUser.getName());
-        user.setEmail(updatedUser.getEmail());
-        user.setPassword(updatedUser.getPassword());
-        user.setRole(updatedUser.getRole());
-        return userRepository.save(user);
-    }
+    /**
+     * Altera a senha de um usuário.
+     *
+     * @param id identificador do usuário.
+     * @param currentPassword senha atual.
+     * @param newPassword nova senha.
+     * @return usuário atualizado.
+     */
+    User changePassword(UUID id, String currentPassword, String newPassword);
 
-    public void deleteUser(UUID id) {
-        User user = findById(id);
-        userRepository.delete(user);
-    }
+    /**
+     * Exclui um usuário.
+     *
+     * @param id identificador do usuário a ser excluído.
+     */
+    void deleteUser(UUID id);
 }
