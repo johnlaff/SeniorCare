@@ -36,6 +36,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth
+                        // Swagger UI and OpenAPI endpoints
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-resources/**").permitAll()
+                        .requestMatchers("/webjars/**").permitAll()
+                        // API endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/organizations/**").hasAnyRole("ADMIN")
