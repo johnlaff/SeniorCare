@@ -39,22 +39,22 @@ public class AuditLog {
     @Column(name = "entity_id")
     private UUID entityId;
 
-    /**
-     * Momento exato em que a ação foi realizada.
-     * Preenchido em código via @PrePersist, para evitar depender de DEFAULT no DB.
-     */
     private LocalDateTime timestamp;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    /**
-     * Popula o campo timestamp com data/hora atual antes de persistir a entidade.
-     */
+    @Version
+    @Column(name = "version")
+    private Long version;
+
     @PrePersist
     public void onPrePersist() {
         if (this.timestamp == null) {
             this.timestamp = LocalDateTime.now();
+        }
+        if (this.version == null) {
+            this.version = 0L;
         }
     }
 

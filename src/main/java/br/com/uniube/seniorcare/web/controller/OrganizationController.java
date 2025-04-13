@@ -22,7 +22,6 @@ import java.util.UUID;
 @RequestMapping("/api/organizations")
 @RequiredArgsConstructor
 @Tag(name = "Organizações", description = "API para gerenciamento de organizações")
-@SecurityRequirement(name = "bearer-jwt")
 public class OrganizationController {
 
     private final OrganizationService organizationService;

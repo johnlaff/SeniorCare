@@ -10,3 +10,5 @@ spring:
 app:
   document:
     storage-path: ${STORAGE_PATH:./storage/documents}
+  security:
+    development-mode: true
