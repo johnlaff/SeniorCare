@@ -1,0 +1,16 @@
+services:
+  seniorcare-db:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=seniorcare
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=dev
+    expose:
+      - "5432"
+    ports:
+      - "5432:5432"
+    volumes:
+      - seniorcare_data:/var/lib/postgresql/data
+
+volumes:
+  seniorcare_data:

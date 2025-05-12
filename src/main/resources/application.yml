@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none  # Flyway cuida do schema, então desative o Hibernate
+    show-sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true  # Se houver um banco já existente, cria um baseline
+    locations: classpath:db/migration  # Onde as migrações serão buscadas
+app:
+  document:
+    storage-path: ${STORAGE_PATH:./storage/documents}
+  security:
+    development-mode: ${DEV_MODE:true}  # Ativado por padrão, desative em produção
+    jwt:
+      # Chave secreta para assinatura dos tokens JWT (deve ser alterada em produção)
+      secret: ${JWT_SECRET:chaveSecretaTemporariaParaTestesDoSeniorCareApi123456789}
+      # Tempo de expiração do token de acesso (24 horas em milissegundos)
+      expiration: ${JWT_EXPIRATION:86400000}
+      # Tempo de expiração do token de atualização (7 dias em milissegundos)
+      refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
