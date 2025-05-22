@@ -7,7 +7,6 @@ import br.com.uniube.seniorcare.security.JwtTokenProvider;
 import br.com.uniube.seniorcare.web.dto.request.LoginRequest;
 import br.com.uniube.seniorcare.web.dto.request.RefreshTokenRequest;
 import br.com.uniube.seniorcare.web.dto.response.TokenResponse;
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import br.com.uniube.seniorcare.web.dto.request.RegisterRequest;
+import br.com.uniube.seniorcare.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,6 +31,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     @PostMapping("/login")
     @Operation(summary = "Autenticar usuário")
@@ -72,5 +74,14 @@ public class AuthController {
         } catch (JwtException e) {
             throw new BusinessException("Token de atualização inválido");
         }
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Cadastrar novo usuário")
+    @ApiResponse(responseCode = "201", description = "Usuário cadastrado com sucesso")
+    @ApiResponse(responseCode = "400", description = "Dados inválidos ou usuário já existe")
+    public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+        authService.register(request);
+        return ResponseEntity.status(201).build();
     }
 }
