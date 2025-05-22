@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import br.com.uniube.seniorcare.web.dto.request.RegisterRequest;
 import br.com.uniube.seniorcare.service.AuthService;
+import br.com.uniube.seniorcare.security.LoginAttemptService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,22 +33,30 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final LoginAttemptService loginAttemptService;
 
     @PostMapping("/login")
     @Operation(summary = "Autenticar usuário")
     @ApiResponse(responseCode = "200", description = "Autenticação bem-sucedida")
     @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
+        if (loginAttemptService.isBlocked(request.getEmail())) {
+            throw new BusinessException("Usuário temporariamente bloqueado por múltiplas tentativas de login. Tente novamente mais tarde.");
+        }
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("Credenciais inválidas"));
+                .orElseThrow(() -> {
+                    loginAttemptService.loginFailed(request.getEmail());
+                    return new BusinessException("Credenciais inválidas");
+                });
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            loginAttemptService.loginFailed(request.getEmail());
             throw new BusinessException("Credenciais inválidas");
         }
 
+        loginAttemptService.loginSucceeded(request.getEmail());
         String accessToken = jwtTokenProvider.createToken(user);
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
-
         return ResponseEntity.ok(new TokenResponse(accessToken, refreshToken));
     }
 
