@@ -1,5 +1,6 @@
 package br.com.uniube.seniorcare.service;
 
+import br.com.uniube.seniorcare.domain.entity.Caregiver;
 import br.com.uniube.seniorcare.domain.entity.Elderly;
 import br.com.uniube.seniorcare.domain.entity.FamilyMember;
 
@@ -33,6 +34,22 @@ public interface ElderlyService {
     Elderly findById(UUID id);
 
     /**
+     * Retorna todos os cuidadores vinculados a um idoso.
+     *
+     * @param elderlyId identificador do idoso.
+     * @return lista de cuidadores vinculados ao idoso.
+     */
+    List<Caregiver> getCaregiversByElderlyId(UUID elderlyId);
+
+    /**
+     * Retorna todos os familiares vinculados a um idoso.
+     *
+     * @param elderlyId identificador do idoso.
+     * @return lista de familiares vinculados ao idoso.
+     */
+    List<FamilyMember> getFamilyMembersByElderlyId(UUID elderlyId);
+
+    /**
      * Cria um novo registro de idoso, aplicando validações de negócio.
      *
      * @param elderly entidade que representa o novo idoso.
@@ -41,7 +58,7 @@ public interface ElderlyService {
     Elderly createElderly(Elderly elderly);
 
     /**
-     * Atualiza um idoso existente.
+     * Atualiza um idoso existente, aplicando validações de negócio.
      *
      * @param id identificador do idoso a ser atualizado.
      * @param updatedElderly entidade com os dados atualizados.
@@ -50,7 +67,7 @@ public interface ElderlyService {
     Elderly updateElderly(UUID id, Elderly updatedElderly);
 
     /**
-     * Exclui um idoso se não houver registros dependentes.
+     * Exclui um idoso, verificando vínculos dependentes antes da exclusão.
      *
      * @param id identificador do idoso a ser excluído.
      */
@@ -61,12 +78,12 @@ public interface ElderlyService {
      *
      * @param elderlyId identificador do idoso.
      * @param caregiverId identificador do cuidador.
-     * @return idoso atualizado com novo vínculo.
+     * @return idoso atualizado com o novo vínculo.
      */
     Elderly assignCaregiver(UUID elderlyId, UUID caregiverId);
 
     /**
-     * Remove o vínculo entre um cuidador e um idoso.
+     * Remove o vínculo de um cuidador de um idoso.
      *
      * @param elderlyId identificador do idoso.
      * @param caregiverId identificador do cuidador.
@@ -75,17 +92,17 @@ public interface ElderlyService {
     Elderly removeCaregiver(UUID elderlyId, UUID caregiverId);
 
     /**
-     * Adiciona um membro da família ao idoso.
+     * Adiciona um membro da família a um idoso.
      *
      * @param elderlyId identificador do idoso.
-     * @param userId identificador do usuário que será vinculado como familiar.
-     * @param relationship relacionamento com o idoso.
-     * @return o objeto FamilyMember criado.
+     * @param userId identificador do usuário.
+     * @param relationship tipo de relacionamento.
+     * @return vínculo criado.
      */
     FamilyMember addFamilyMember(UUID elderlyId, UUID userId, String relationship);
 
     /**
-     * Remove um membro da família do idoso.
+     * Remove um vínculo de membro da família de um idoso.
      *
      * @param familyMemberId identificador do vínculo familiar a ser removido.
      */

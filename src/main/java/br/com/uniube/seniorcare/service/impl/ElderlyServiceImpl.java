@@ -1,5 +1,6 @@
 package br.com.uniube.seniorcare.service.impl;
 
+import br.com.uniube.seniorcare.domain.entity.Caregiver;
 import br.com.uniube.seniorcare.domain.entity.Elderly;
 import br.com.uniube.seniorcare.domain.entity.FamilyMember;
 import br.com.uniube.seniorcare.domain.entity.User;
@@ -232,6 +233,16 @@ public class ElderlyServiceImpl implements ElderlyService {
         );
     }
 
+    @Override
+    public List<Caregiver> getCaregiversByElderlyId(UUID elderlyId) {
+        return caregiverRepository.findByElderlyId(elderlyId);
+    }
+
+    @Override
+    public List<FamilyMember> getFamilyMembersByElderlyId(UUID elderlyId) {
+        return familyMemberRepository.findByElderlyId(elderlyId);
+    }
+
     private void validateElderlyData(Elderly elderly) {
         if (elderly.getName() == null || elderly.getName().isBlank()) {
             throw new BusinessException("O nome do idoso é obrigatório");
@@ -250,3 +261,4 @@ public class ElderlyServiceImpl implements ElderlyService {
         }
     }
 }
+

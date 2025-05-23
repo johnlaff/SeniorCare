@@ -5,11 +5,9 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class FamilyMemberResponse {
+public class FamilyMemberSummary {
     private UUID id;
-    private OrganizationSummary organization;
     private UserSummary user;
-    private ElderlySummary elderly;
     private Relationship relationship;
 }
 

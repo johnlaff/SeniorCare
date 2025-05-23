@@ -31,7 +31,21 @@ public class ElderlyController {
     @ApiResponse(responseCode = "200", description = "Operação bem-sucedida")
     public ResponseEntity<List<ElderlyResponse>> findAll() {
         List<Elderly> elderlyList = elderlyService.findAll();
-        return ResponseEntity.ok(elderlyMapper.toDtoList(elderlyList));
+        List<ElderlyResponse> responseList = elderlyList.stream().map(elderly -> {
+            ElderlyResponse response = elderlyMapper.toDto(elderly);
+            response.setCaregivers(
+                elderlyMapper.toCaregiverSummaryList(
+                    elderlyService.getCaregiversByElderlyId(elderly.getId())
+                )
+            );
+            response.setFamilyMembers(
+                elderlyMapper.toFamilyMemberSummaryList(
+                    elderlyService.getFamilyMembersByElderlyId(elderly.getId())
+                )
+            );
+            return response;
+        }).toList();
+        return ResponseEntity.ok(responseList);
     }
 
     @GetMapping("/{id}")
@@ -40,7 +54,18 @@ public class ElderlyController {
     @ApiResponse(responseCode = "404", description = "Idoso não encontrado")
     public ResponseEntity<ElderlyResponse> findById(@PathVariable UUID id) {
         Elderly elderly = elderlyService.findById(id);
-        return ResponseEntity.ok(elderlyMapper.toDto(elderly));
+        ElderlyResponse response = elderlyMapper.toDto(elderly);
+        response.setCaregivers(
+            elderlyMapper.toCaregiverSummaryList(
+                elderlyService.getCaregiversByElderlyId(id)
+            )
+        );
+        response.setFamilyMembers(
+            elderlyMapper.toFamilyMemberSummaryList(
+                elderlyService.getFamilyMembersByElderlyId(id)
+            )
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping

@@ -3,6 +3,7 @@ package br.com.uniube.seniorcare.web.controller;
 import br.com.uniube.seniorcare.domain.entity.Caregiver;
 import br.com.uniube.seniorcare.domain.entity.Elderly;
 import br.com.uniube.seniorcare.service.CaregiverService;
+import br.com.uniube.seniorcare.service.ElderlyService;
 import br.com.uniube.seniorcare.web.dto.request.CaregiverRequest;
 import br.com.uniube.seniorcare.web.dto.response.CaregiverResponse;
 import br.com.uniube.seniorcare.web.dto.response.ElderlyResponse;
@@ -29,6 +30,7 @@ public class CaregiverController {
     private final CaregiverService caregiverService;
     private final CaregiverMapper caregiverMapper;
     private final ElderlyMapper elderlyMapper;
+    private final ElderlyService elderlyService;
 
     @GetMapping
     @Operation(summary = "Listar todos os cuidadores")
@@ -84,7 +86,14 @@ public class CaregiverController {
     @ApiResponse(responseCode = "200", description = "Operação bem-sucedida")
     public ResponseEntity<List<ElderlyResponse>> getAssignedElderly(@PathVariable UUID id) {
         List<Elderly> elderlyList = caregiverService.getAssignedElderly(id);
-        return ResponseEntity.ok(elderlyMapper.toDtoList(elderlyList));
+        List<ElderlyResponse> responseList = elderlyList.stream()
+            .map(elderly -> elderlyMapper.toEnrichedElderlyResponse(
+                elderly,
+                elderlyService.getCaregiversByElderlyId(elderly.getId()),
+                elderlyService.getFamilyMembersByElderlyId(elderly.getId())
+            ))
+            .toList();
+        return ResponseEntity.ok(responseList);
     }
 }
 
