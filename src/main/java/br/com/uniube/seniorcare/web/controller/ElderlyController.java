@@ -30,22 +30,7 @@ public class ElderlyController {
     @Operation(summary = "Listar todos os idosos")
     @ApiResponse(responseCode = "200", description = "Operação bem-sucedida")
     public ResponseEntity<List<ElderlyResponse>> findAll() {
-        List<Elderly> elderlyList = elderlyService.findAll();
-        List<ElderlyResponse> responseList = elderlyList.stream().map(elderly -> {
-            ElderlyResponse response = elderlyMapper.toDto(elderly);
-            response.setCaregivers(
-                elderlyMapper.toCaregiverSummaryList(
-                    elderlyService.getCaregiversByElderlyId(elderly.getId())
-                )
-            );
-            response.setFamilyMembers(
-                elderlyMapper.toFamilyMemberSummaryList(
-                    elderlyService.getFamilyMembersByElderlyId(elderly.getId())
-                )
-            );
-            return response;
-        }).toList();
-        return ResponseEntity.ok(responseList);
+        return ResponseEntity.ok(elderlyService.findAllEnriched());
     }
 
     @GetMapping("/{id}")
@@ -53,19 +38,7 @@ public class ElderlyController {
     @ApiResponse(responseCode = "200", description = "Idoso encontrado")
     @ApiResponse(responseCode = "404", description = "Idoso não encontrado")
     public ResponseEntity<ElderlyResponse> findById(@PathVariable UUID id) {
-        Elderly elderly = elderlyService.findById(id);
-        ElderlyResponse response = elderlyMapper.toDto(elderly);
-        response.setCaregivers(
-            elderlyMapper.toCaregiverSummaryList(
-                elderlyService.getCaregiversByElderlyId(id)
-            )
-        );
-        response.setFamilyMembers(
-            elderlyMapper.toFamilyMemberSummaryList(
-                elderlyService.getFamilyMembersByElderlyId(id)
-            )
-        );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(elderlyService.findEnrichedById(id));
     }
 
     @PostMapping
@@ -75,7 +48,7 @@ public class ElderlyController {
     public ResponseEntity<ElderlyResponse> create(@Valid @RequestBody ElderlyRequest request) {
         Elderly elderly = elderlyMapper.toEntity(request);
         Elderly created = elderlyService.createElderly(elderly);
-        return ResponseEntity.status(HttpStatus.CREATED).body(elderlyMapper.toDto(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(elderlyService.findEnrichedById(created.getId()));
     }
 
     @PutMapping("/{id}")
@@ -88,7 +61,7 @@ public class ElderlyController {
             @Valid @RequestBody ElderlyRequest request) {
         Elderly elderly = elderlyMapper.toEntity(request);
         Elderly updated = elderlyService.updateElderly(id, elderly);
-        return ResponseEntity.ok(elderlyMapper.toDto(updated));
+        return ResponseEntity.ok(elderlyService.findEnrichedById(updated.getId()));
     }
 
     @DeleteMapping("/{id}")
@@ -108,7 +81,7 @@ public class ElderlyController {
             @PathVariable UUID elderlyId,
             @PathVariable UUID caregiverId) {
         Elderly elderly = elderlyService.assignCaregiver(elderlyId, caregiverId);
-        return ResponseEntity.ok(elderlyMapper.toDto(elderly));
+        return ResponseEntity.ok(elderlyService.findEnrichedById(elderly.getId()));
     }
 
     @DeleteMapping("/{elderlyId}/caregivers/{caregiverId}")
@@ -119,6 +92,7 @@ public class ElderlyController {
             @PathVariable UUID elderlyId,
             @PathVariable UUID caregiverId) {
         Elderly elderly = elderlyService.removeCaregiver(elderlyId, caregiverId);
-        return ResponseEntity.ok(elderlyMapper.toDto(elderly));
+        return ResponseEntity.ok(elderlyService.findEnrichedById(elderly.getId()));
     }
 }
+

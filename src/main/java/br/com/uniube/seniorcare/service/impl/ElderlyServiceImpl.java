@@ -13,10 +13,11 @@ import br.com.uniube.seniorcare.domain.repository.UserRepository;
 import br.com.uniube.seniorcare.service.AuditService;
 import br.com.uniube.seniorcare.service.ElderlyService;
 import br.com.uniube.seniorcare.service.utils.SecurityUtils;
+import br.com.uniube.seniorcare.web.dto.response.ElderlyResponse;
+import br.com.uniube.seniorcare.web.mapper.ElderlyMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,19 +31,22 @@ public class ElderlyServiceImpl implements ElderlyService {
     private final UserRepository userRepository;
     private final AuditService auditService;
     private final SecurityUtils securityUtils;
+    private final ElderlyMapper elderlyMapper;
 
     public ElderlyServiceImpl(ElderlyRepository elderlyRepository,
                               CaregiverRepository caregiverRepository,
                               FamilyMemberRepository familyMemberRepository,
                               UserRepository userRepository,
                               AuditService auditService,
-                              SecurityUtils securityUtils) {
+                              SecurityUtils securityUtils,
+                              ElderlyMapper elderlyMapper) {
         this.elderlyRepository = elderlyRepository;
         this.caregiverRepository = caregiverRepository;
         this.familyMemberRepository = familyMemberRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
         this.securityUtils = securityUtils;
+        this.elderlyMapper = elderlyMapper;
     }
 
     @Override
@@ -199,7 +203,7 @@ public class ElderlyServiceImpl implements ElderlyService {
                 .organization(elderly.getOrganization())
                 .user(user)
                 .elderly(elderly)
-                .relationship(relationshipEnum) // Usa o enum convertido
+                .relationship(relationshipEnum)
                 .build();
 
         FamilyMember created = familyMemberRepository.save(familyMember);
@@ -243,22 +247,37 @@ public class ElderlyServiceImpl implements ElderlyService {
         return familyMemberRepository.findByElderlyId(elderlyId);
     }
 
+    @Override
+    public List<ElderlyResponse> findAllEnriched() {
+        List<Elderly> elderlyList = findAll();
+        return elderlyList.stream()
+                .map(e -> elderlyMapper.toEnrichedElderlyResponse(
+                        e,
+                        getCaregiversByElderlyId(e.getId()),
+                        getFamilyMembersByElderlyId(e.getId())
+                ))
+                .toList();
+    }
+
+    @Override
+    public ElderlyResponse findEnrichedById(UUID id) {
+        Elderly elderly = findById(id);
+        return elderlyMapper.toEnrichedElderlyResponse(
+                elderly,
+                getCaregiversByElderlyId(id),
+                getFamilyMembersByElderlyId(id)
+        );
+    }
+
     private void validateElderlyData(Elderly elderly) {
         if (elderly.getName() == null || elderly.getName().isBlank()) {
             throw new BusinessException("O nome do idoso é obrigatório");
         }
-
         if (elderly.getBirthDate() == null) {
             throw new BusinessException("A data de nascimento do idoso é obrigatória");
         }
-
-        if (elderly.getBirthDate().isAfter(LocalDate.now())) {
-            throw new BusinessException("A data de nascimento não pode ser futura");
-        }
-
         if (elderly.getOrganization() == null || elderly.getOrganization().getId() == null) {
             throw new BusinessException("A organização do idoso é obrigatória");
         }
     }
 }
-

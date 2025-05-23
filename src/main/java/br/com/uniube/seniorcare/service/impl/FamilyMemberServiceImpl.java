@@ -67,8 +67,7 @@ public class FamilyMemberServiceImpl implements FamilyMemberService {
                 .orElseThrow(() -> new BusinessException("Usuário não encontrado com o id: " + userId));
 
         // Precisamos criar este método no repositório
-        List<FamilyMember> familyMembers = familyMemberRepository.findByUserId(userId);
-        return familyMembers;
+        return familyMemberRepository.findByUserId(userId);
     }
 
     @Override

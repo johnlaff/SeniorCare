@@ -10,7 +10,10 @@ import br.com.uniube.seniorcare.domain.repository.ElderlyRepository;
 import br.com.uniube.seniorcare.domain.repository.UserRepository;
 import br.com.uniube.seniorcare.service.AuditService;
 import br.com.uniube.seniorcare.service.CaregiverService;
+import br.com.uniube.seniorcare.service.ElderlyService;
 import br.com.uniube.seniorcare.service.utils.SecurityUtils;
+import br.com.uniube.seniorcare.web.dto.response.ElderlyResponse;
+import br.com.uniube.seniorcare.web.mapper.ElderlyMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,17 +29,23 @@ public class CaregiverServiceImpl implements CaregiverService {
     private final ElderlyRepository elderlyRepository;
     private final AuditService auditService;
     private final SecurityUtils securityUtils;
+    private final ElderlyMapper elderlyMapper;
+    private final ElderlyService elderlyService;
 
     public CaregiverServiceImpl(CaregiverRepository caregiverRepository,
                                UserRepository userRepository,
                                ElderlyRepository elderlyRepository,
                                AuditService auditService,
-                               SecurityUtils securityUtils) {
+                               SecurityUtils securityUtils,
+                               ElderlyMapper elderlyMapper,
+                               ElderlyService elderlyService) {
         this.caregiverRepository = caregiverRepository;
         this.userRepository = userRepository;
         this.elderlyRepository = elderlyRepository;
         this.auditService = auditService;
         this.securityUtils = securityUtils;
+        this.elderlyMapper = elderlyMapper;
+        this.elderlyService = elderlyService;
     }
 
     @Override
@@ -139,6 +148,20 @@ public class CaregiverServiceImpl implements CaregiverService {
         return elderlyRepository.findByCaregiverId(caregiverId);
     }
 
+    @Override
+    public List<ElderlyResponse> getAssignedElderlyEnriched(UUID caregiverId) {
+        // Verifica se o cuidador existe
+        findById(caregiverId);
+        List<Elderly> elderlyList = elderlyRepository.findByCaregiverId(caregiverId);
+        return elderlyList.stream()
+                .map(elderly -> elderlyMapper.toEnrichedElderlyResponse(
+                        elderly,
+                        elderlyService.getCaregiversByElderlyId(elderly.getId()),
+                        elderlyService.getFamilyMembersByElderlyId(elderly.getId())
+                ))
+                .toList();
+    }
+
     private void validateCaregiverData(Caregiver caregiver) {
         if (caregiver.getUser() == null || caregiver.getUser().getId() == null) {
             throw new BusinessException("O usuário do cuidador é obrigatório");
@@ -149,3 +172,4 @@ public class CaregiverServiceImpl implements CaregiverService {
         }
     }
 }
+

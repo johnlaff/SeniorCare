@@ -2,13 +2,14 @@ package br.com.uniube.seniorcare.service;
 
 import br.com.uniube.seniorcare.domain.entity.Caregiver;
 import br.com.uniube.seniorcare.domain.entity.Elderly;
+import br.com.uniube.seniorcare.web.dto.response.ElderlyResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Serviço para gerenciamento de cuidadores.
- *
+ * <p>
  * Regras de negócio:
  * 1. Cada cuidador deve estar vinculado a um usuário existente no sistema
  * 2. Um usuário só pode ser cuidador uma vez
@@ -75,4 +76,13 @@ public interface CaregiverService {
      * @return lista de idosos vinculados ao cuidador.
      */
     List<Elderly> getAssignedElderly(UUID caregiverId);
+
+    /**
+     * Retorna todos os idosos vinculados ao cuidador, já enriquecidos com vínculos (caregivers/familyMembers).
+     *
+     * @param caregiverId identificador do cuidador.
+     * @return lista de ElderlyResponse enriquecidos.
+     */
+    List<ElderlyResponse> getAssignedElderlyEnriched(UUID caregiverId);
 }
+

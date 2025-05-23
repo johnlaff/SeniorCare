@@ -3,13 +3,14 @@ package br.com.uniube.seniorcare.service;
 import br.com.uniube.seniorcare.domain.entity.Caregiver;
 import br.com.uniube.seniorcare.domain.entity.Elderly;
 import br.com.uniube.seniorcare.domain.entity.FamilyMember;
+import br.com.uniube.seniorcare.web.dto.response.ElderlyResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Serviço para gerenciamento de idosos.
- *
+ * <p>
  * Regras de negócio:
  * 1. Cada idoso deve estar vinculado a uma organização
  * 2. O nome e data de nascimento são obrigatórios
@@ -107,4 +108,20 @@ public interface ElderlyService {
      * @param familyMemberId identificador do vínculo familiar a ser removido.
      */
     void removeFamilyMember(UUID familyMemberId);
+
+    /**
+     * Retorna todos os idosos enriquecidos com vínculos (caregivers/familyMembers).
+     *
+     * @return lista de ElderlyResponse enriquecidos.
+     */
+    List<ElderlyResponse> findAllEnriched();
+
+    /**
+     * Busca um idoso por ID e retorna enriquecido com vínculos (caregivers/familyMembers).
+     *
+     * @param id identificador do idoso.
+     * @return ElderlyResponse enriquecido.
+     */
+    ElderlyResponse findEnrichedById(UUID id);
 }
+
